@@ -15,6 +15,7 @@ export default function LoginPage() {
     // Verificar se já está autenticado
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
+        router.refresh();
         router.push('/');
       } else {
         setLoading(false);
@@ -24,8 +25,11 @@ export default function LoginPage() {
     // Escutar mudanças de autenticação
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
+        // Aguardar um momento para os cookies serem definidos
+        await new Promise(resolve => setTimeout(resolve, 100));
+        router.refresh();
         router.push('/');
       }
     });

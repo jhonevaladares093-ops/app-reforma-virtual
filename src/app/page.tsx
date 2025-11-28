@@ -38,16 +38,16 @@ export default function HomePage() {
   const [arCapabilities, setArCapabilities] = useState<ARCapabilities | null>(null);
   const [arError, setArError] = useState<string | null>(null);
   const [isCheckingAR, setIsCheckingAR] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Verificar autenticação
+  // Verificar autenticação - SEM redirecionamento (middleware cuida disso)
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
         loadEnvironments(session.user.id);
-      } else {
-        router.push('/login');
       }
+      setLoading(false);
     });
 
     const {
@@ -56,13 +56,12 @@ export default function HomePage() {
       if (session?.user) {
         setUser(session.user);
         loadEnvironments(session.user.id);
-      } else {
-        router.push('/login');
       }
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
-  }, [router]);
+  }, []);
 
   // Verificar suporte AR ao carregar
   useEffect(() => {
@@ -406,7 +405,7 @@ export default function HomePage() {
     );
   };
 
-  if (!user) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-[#0A1A2F] flex items-center justify-center">
         <div className="text-white text-lg">Carregando...</div>

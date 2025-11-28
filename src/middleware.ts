@@ -1,4 +1,4 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
@@ -26,7 +26,7 @@ export async function middleware(req: NextRequest) {
         get(name: string) {
           return req.cookies.get(name)?.value;
         },
-        set(name: string, value: string, options: CookieOptions) {
+        set(name: string, value: string, options: any) {
           req.cookies.set({
             name,
             value,
@@ -43,7 +43,7 @@ export async function middleware(req: NextRequest) {
             ...options,
           });
         },
-        remove(name: string, options: CookieOptions) {
+        remove(name: string, options: any) {
           req.cookies.set({
             name,
             value: '',
@@ -64,23 +64,8 @@ export async function middleware(req: NextRequest) {
     }
   );
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  // Se não estiver autenticado e não estiver na página de login, redirecionar
-  if (!session && req.nextUrl.pathname !== '/login') {
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = '/login';
-    return NextResponse.redirect(redirectUrl);
-  }
-
-  // Se estiver autenticado e tentar acessar /login, redirecionar para home
-  if (session && req.nextUrl.pathname === '/login') {
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = '/';
-    return NextResponse.redirect(redirectUrl);
-  }
+  // Apenas atualizar a sessão, sem redirecionar
+  await supabase.auth.getSession();
 
   return response;
 }
